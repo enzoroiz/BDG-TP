@@ -1,0 +1,78 @@
+body {
+    color: #A7A7A7;
+}
+
+#container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    overflow: auto;
+    min-width: 350px;
+}
+
+#map {
+    min-height: 100%;
+}
+
+#begin {
+    position: relative;
+    top: 50px;
+    z-index: 1;
+}
+
+#begin #wrapper {
+    background: white;
+    border-radius: 10px;
+}
+
+#begin #title {
+    text-align: center;
+    font-size: 70px;
+    margin-top: 15px;
+}
+
+#begin #intro {
+    text-align: center;
+    font-size: 22px;
+    line-height: 25px;
+    margin: 10px 20px;
+}
+
+#begin .coxinha {
+    color: #0600BD;
+}
+
+#begin .petralha {
+    color: #E60000;
+}
+
+#begin img {
+    margin: 25px 15%;
+    width: 70%;
+}
+
+#begin #button {
+    margin: 25px 35%;
+    width: 30%;
+    height: 50px;
+    background-color: #01579B;
+    color: #FFFFFF;
+    font-size: 25px;
+    line-height: 50px;
+    text-align: center;
+    cursor: pointer;
+}
+
+#tipo {
+    position: absolute;
+    top: 10px;
+    z-index: 1;
+    right: 10px;
+    width: auto;
+}
+
+.form-group {
+    margin-bottom: 0;
+}

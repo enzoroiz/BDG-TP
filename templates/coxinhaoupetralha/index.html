@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+
+    {% load staticfiles %}
+
+    <head>
+        <title>Coxinha ou Petralha</title>
+        <!-- CSS -->
+        <link href="{% static "css/bootstrap-responsive.min.css" %}" rel="stylesheet">
+        <link href="{% static "css/bootstrap.min.css" %}" rel="stylesheet">
+        <link href="{%static "css/style.css" %}" rel="stylesheet">
+
+        <!-- Scripts -->
+        <script src="{% static "js/jquery-2.2.0.min.js" %}"></script>
+        <script src="{% static "js/bootstrap.min.js" %}"></script>
+
+        <!-- Others -->
+        <meta name="viewport" content="initial-scale=1.0">
+        <meta charset="utf-8">
+    </head>
+
+    <body>
+        <!-- Container -->
+        <div id="begin" style="display: none;">
+            <div id="wrapper" class="col-sm-8 col-md-8 col-lg-8 col-sm-offset-2 col-md-offset-2 col-lg-offset-2">
+                <div id="title">
+                    <span class="coxinha">#Coxinha</span> ou <span class="petralha">#Petralha</span>
+                </div>
+                <div id="intro">Registro de tweets geo referenciados em Belo Horizonte classificados por posição política.
+                    A classificação foi feita de acordo com palavras chave, que representam opinião política dos usuários, utilizadas na rede social Twitter .</div>
+                <img src="{% static "img/coxinhavspetralha.jpg" %}">
+                <div id="button">Ver mapa</div>
+            </div>
+        </div>
+        <div id="container">
+            <div class="form-group">
+                <select class="form-control" id="tipo">
+                    <option>#Coxinha e #Petralha</option>
+                    <option>#Coxinha</option>
+                    <option>#Petralha</option>
+                </select>
+            </div>
+            <div id="map" class="no-opacity">
+            </div>
+        </div>
+
+        <!-- Scripts para a geração e manipulação do mapa -->
+        <script src="https://maps.googleapis.com/maps/api/js?key={{ API_KEY }}&callback=initMap&libraries=geometry,places" async defer></script>
+        <script type="text/javascript">
+            function initMap() {
+                var i;
+                var map = new google.maps.Map(document.getElementById('map'), {
+                    center: {lat: -19.9042127, lng: -43.9708497},
+                    zoom: 12,
+                    tilt: 0,
+                    disableDefaultUI: true,
+                    mapTypeId: google.maps.MapTypeId.HYBRID,
+                    scrollwheel: false,
+                    mapTypeControl: false,
+                    draggable: false
+                });
+
+                /*###################################
+                            PETRALHAS
+                 ###################################*/
+                var petralha_tweets = new Array({{ petralhas|length }});
+                var petralha_markers = [];
+                {% for petralha in petralhas %}
+                    i = {{ forloop.counter0 }}
+                    petralha_tweets[i] = "{{ petralha.text|escapejs }}";
+                    var latlng = new google.maps.LatLng({{ petralha.lat }}, {{ petralha.lng }});
+					var marker = new google.maps.Marker({
+		                position: latlng,
+                        icon: "{% static "img/petralha_marker.png" %}",
+		                map: map
+		            });
+                    petralha_markers.push(marker);
+
+                    var infowindow = new google.maps.InfoWindow({
+                        maxWidth: 150
+                    });
+
+                    petralha_tweets[i] = '<div id="content" style="color: #333333;">'+
+                                            '<div id="siteNotice">'+
+                                                    '<div id="bodyContent">' + petralha_tweets[i] + '</div>' +
+                                            '</div>'+
+                                        '</div>';
+
+                    google.maps.event.addListener(marker, 'click', (function(marker, i) {
+                        return function() {
+                          infowindow.setContent(petralha_tweets[i]);
+                          infowindow.open(map, marker);
+                        }
+                    })(marker, i));
+
+                {% endfor %}
+
+                /*###################################
+                            COXINHAS
+                 ###################################*/
+                var coxinha_tweets = new Array({{ coxinhas|length }});
+                var coxinha_markers = [];
+                {% for coxinha in coxinhas %}
+                    i = {{ forloop.counter0 }};
+                    coxinha_tweets[i] = "{{ coxinha.text|escapejs }}";
+                    var latlng = new google.maps.LatLng({{ coxinha.lat }}, {{ coxinha.lng }});
+					var marker = new google.maps.Marker({
+		                position: latlng,
+                        icon: "{% static "img/coxinha_marker.png" %}",
+		                map: map
+		            });
+                    coxinha_markers.push(marker);
+
+                    var infowindow = new google.maps.InfoWindow({
+                        maxWidth: 150
+                    });
+
+                    coxinha_tweets[i] = '<div id="content" style="color: #333333;">'+
+                                            '<div id="siteNotice">'+
+                                                    '<div id="bodyContent">' + coxinha_tweets[i] + '</div>' +
+                                            '</div>'+
+                                        '</div>';
+
+                    google.maps.event.addListener(marker, 'click', (function(marker, i) {
+                        return function() {
+                          infowindow.setContent(coxinha_tweets[i]);
+                          infowindow.open(map, marker);
+                        }
+                    })(marker, i));
+
+                {% endfor %}
+
+                $('#button').click(function(){
+                    $('#begin').fadeOut('slow');
+                    setOptions(map)
+                });
+
+                if($(window).width() < 1200){
+                    setOptions(map);
+                } else {
+                    $('#begin').css('display', 'block');
+                }
+
+                $("#tipo").change(function() {
+                    var tipo = $(this).val();
+                    if(tipo == '#Petralha'){
+                        setMarkers(coxinha_markers, null);
+                        setMarkers(petralha_markers, map);
+                    } else if (tipo == '#Coxinha') {
+                        setMarkers(coxinha_markers, map);
+                        setMarkers(petralha_markers, null);
+                    } else {
+                        setMarkers(coxinha_markers, map);
+                        setMarkers(petralha_markers, map);
+                    }
+                });
+            }
+
+            function setMarkers(markers, map){
+                var i;
+                for(i=0; i<markers.length;i++){
+                    markers[i].setMap(map);
+                }
+            }
+
+            function setOptions(map){
+                map.setOptions({
+                    scrollwheel: true,
+                    mapTypeControl: true,
+                    draggable: true
+                });
+            }
+
+        </script>
+  </body>
+</html>
